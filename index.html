@@ -505,7 +505,7 @@
     <!-- Menu Section -->
     <section id="menu" class="py-8 px-4 max-w-6xl mx-auto">
         <div class="text-center mb-8">
-            <h2 class="text-4xl font-bold text-gray-800 mb-4">Nosso Cardápio</h2>
+            <h2 class="text-4xl font-bold text-gray-800 mb-4">Nosso Cardápio- teste</h2>
             <p class="text-gray-600 text-lg mx-auto">Escolha sua pizza favorita ou uma bebida refrescante!</p>
         </div>
 
@@ -1077,7 +1077,7 @@
                     // Headers para Promoções
                     case 'ID Promocao': return 'id';
                     case 'Nome da Promocao': return 'name';
-                    case 'Descricao': return 'description';
+                    case 'Descricao': return 'description'; // CORREÇÃO: Adicionado o mapeamento para a descrição das promoções
                     case 'Preco Promocional': return 'promoPrice';
                     case 'ID Item Aplicavel': return 'itemId';
                     case 'Ativo (SIM/NAO)': return 'active';
@@ -1377,7 +1377,7 @@
                             button.classList.add('opacity-50', 'cursor-not-allowed');
                         }
                     } else { 
-                        if (item.category.toLowerCase() === 'promocionais') {
+                        if (category === 'promocionais') {
                             button.setAttribute('disabled', 'true');
                             button.classList.add('opacity-50', 'cursor-not-allowed');
                         } else {
@@ -1430,7 +1430,7 @@
                 const combinedName = `Meia ${cleanFirstName} & Meia ${item.name}`;
                 
                 const priceFirstHalfFullSize = firstHalfPizza.original_full_price; 
-                const priceSecondHalfFullSize = item[firstHalfHalfPizza.priceKeyForSlices]; 
+                const priceSecondHalfFullSize = item[firstHalfPizza.priceKeyForSlices]; 
 
                 const combinedPrice = ((priceFirstHalfFullSize || 0) / 2) + ((priceSecondHalfFullSize || 0) / 2);
                 const combinedDescription = `${firstHalfPizza.description.replace('Primeira metade: ', '')} e ${item.description}`;
@@ -1477,7 +1477,7 @@
                     optionDiv.className = 'pizza-size-option';
                     optionDiv.innerHTML = `
                         <span class="font-bold text-base text-gray-800">${size.label}</span>
-                        <span class="text-red-600 font-bold text-lg">R$ ${sizePrice.toFixed(2).replace('.', ',')}</span>
+                        <span class="font-bold text-red-600 text-lg">R$ ${sizePrice.toFixed(2).replace('.', ',')}</span>
                         <div class="flex flex-col gap-2 mt-2 w-full">
                             <button class="add-full-size-pizza-btn px-4 py-2 bg-red-600 text-white rounded-md text-sm hover:bg-red-700 transition"
                                     data-slices="${size.slices}" data-price-key="${size.priceKey}">
@@ -1920,7 +1920,7 @@
 
                     promoDiv.innerHTML = `
                         <h4>${promo.name}</h4>
-                        <p>${promo.description}</p>
+                        <p>${promo.description || ''}</p>
                         <span class="price">R$ ${promo.promoPrice.toFixed(2).replace('.', ',')}</span>
                         <button class="add-promo-to-order-btn px-3 py-1 bg-green-600 text-white rounded-full text-sm hover:bg-green-700 transition mt-2"
                                 data-promo-id="${promo.id}" data-image-url="${promoImageUrl || ''}">
@@ -1952,7 +1952,7 @@
                     type: 'promotion',
                     name: promotion.name,
                     price: promotion.promoPrice,
-                    description: promotion.description,
+                    description: promotion.description || '', // Garante que a descrição seja string
                     itemId: promotion.itemId
                 });
                 updateOrderDisplay();
@@ -1971,7 +1971,7 @@
 
         function updatePromotionButtonVisibility() {
             const activePromotionsWithPrice = allPromotionsData.filter(promo => promo.active && promo.promoPrice !== null);
-            if (activePromotionsWithPrice.length > 0 && !orderSidebar.classList.contains('translate-x-0')) {
+            if (activePromotionsWithPrice.length > 0 && !orderSidebar.classList.contains('translate-x-0') && pizzaOptionModal.style.display !== 'flex' && addressInputModal.style.display !== 'flex' && promotionPopup.style.display !== 'flex' && drinkSuggestionModal.style.display !== 'flex' && confirmNoDrinkModal.style.display !== 'flex' && installPromptModal.style.display !== 'flex' && paymentMethodModal.style.display !== 'flex') {
                 promotionButton.style.display = 'flex';
             } else {
                 promotionButton.style.display = 'none';
@@ -2501,18 +2501,23 @@
         });
 
 
-        document.addEventListener('DOMContentLoaded', async function() {
+        // =======================================================================================
+        // CÓDIGO PARA REFRESH DA PÁGINA QUANDO O BROWSER VOLTA AO FOCO
+        // =======================================================================================
+
+        // Nova função para buscar e renderizar todos os dados
+        async function loadMenuAndRender() {
             try {
-                console.log('DEBUG: DOMContentLoaded: Iniciando busca da API...');
+                console.log('DEBUG: loadMenuAndRender: Iniciando busca da API...');
                 const response = await fetch('/api/menu'); 
                 if (!response.ok) {
                     const errorText = await response.text();
-                    console.error('DEBUG: DOMContentLoaded: Erro HTTP ao buscar dados da API:', response.status, errorText);
+                    console.error('DEBUG: loadMenuAndRender: Erro HTTP ao buscar dados da API:', response.status, errorText);
                     throw new Error(`Erro ao buscar dados da API: ${response.statusText || errorText}`);
                 }
                 const data = await response.json(); 
-                console.log('DEBUG: DOMContentLoaded: Dados da API recebidos com sucesso:', data); // Log completo dos dados recebidos
-
+                console.log('DEBUG: loadMenuAndRender: Dados da API recebidos com sucesso.');
+                
                 const cardapioCsvText = data.cardapio;
                 const promocoesCsvText = data.promocoes;
                 const deliveryFeesCsvText = data.deliveryFees; 
@@ -2520,7 +2525,6 @@
                 allMenuData = parseCsvData(cardapioCsvText, 'cardapio');
                 allPromotionsData = parseCsvData(promocoesCsvText, 'promocoes');
                 deliveryFeesData = parseCsvData(deliveryFeesCsvText, 'deliveryFees'); 
-                console.log('DEBUG: DOMContentLoaded: Dados CSV parseados. allMenuData:', allMenuData.length, 'allPromotionsData:', allPromotionsData.length, 'deliveryFeesData:', deliveryFeesData.length); // Log de contagem de itens
                 
                 let orderedUniqueCategories = [];
                 const seenCategories = new Set();
@@ -2535,52 +2539,52 @@
                 populateMenu(allMenuData, orderedUniqueCategories); 
                 populateNeighborhoodDropdown(deliveryFeesData); 
                 setupCategoryObserver(); 
-                console.log('DEBUG: DOMContentLoaded: Cardápio e categorias populados.');
-
                 updatePromotionButtonVisibility(); 
                 updateCartCount(); 
-                updateOrderDisplay(); // Chamada inicial para configurar a exibição da taxa de entrega
+                updateOrderDisplay(); 
                 updateCheckoutButtonText(); 
                 showAddressSummary(); 
-                console.log('DEBUG: DOMContentLoaded: UI atualizada.');
-
+                
                 toggleAddItemButtons(true);
                 toggleCategoryButtons(true);
-
+                
                 setTimeout(() => {
                     window.dispatchEvent(new Event('scroll'));
                 }, 100);
-                console.log('DEBUG: DOMContentLoaded: Carregamento completo e bem-sucedido.');
+                
+                console.log('DEBUG: loadMenuAndRender: Carregamento e renderização concluídos.');
 
             } catch (error) {
-                console.error('DEBUG: DOMContentLoaded: Erro fatal ao carregar o cardápio:', error);
-                // Exibe a mensagem de erro APENAS se houve uma falha na busca ou parsing inicial
+                console.error('DEBUG: loadMenuAndRender: Erro fatal ao carregar o cardápio:', error);
                 showMessageModal('Não foi possível carregar o cardápio no momento. Por favor, tente novamente mais tarde.');
             }
-        });
-        
-        document.addEventListener("visibilitychange", () => {
-            if (document.visibilityState === "visible") {
-                console.log("DEBUG: Página retornou ao foco. Recarregando a página para garantir dados atualizados.");
-                location.reload();
-            }
-        });
+        }
 
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
+        // Evento que garante que a UI será carregada após o DOM estar pronto
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Registra o Service Worker (para PWA, não para cache de dados)
+            if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('/service-worker.js')
                     .then(registration => {
                         console.log('DEBUG: Service Worker registado com sucesso. Scope:', registration.scope);
                     })
                     .catch(error => {
                         console.log('DEBUG: Falha no registo do Service Worker:', error);
-                        if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
-                            console.warn('DEBUG: Erro de rede/CORS no Service Worker. Isso pode ser esperado para recursos de terceiros não-cacheáveis.');
-                        }
                     });
-            });
-        }
-
+            }
+            
+            // Chamada inicial para carregar todos os dados
+            await loadMenuAndRender();
+        });
+        
+        // Listener para o problema do bfcache: recarrega a página para garantir dados atualizados.
+        document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === "visible") {
+                console.log("DEBUG: Página retornou ao foco. Recarregando dados do cardápio.");
+                loadMenuAndRender();
+            }
+        });
+        
         // --- Lógica de Instalação do PWA ---
 
         function isPwaInstalled() {
