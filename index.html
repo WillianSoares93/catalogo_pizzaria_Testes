@@ -471,7 +471,6 @@
             animation: fadeIn 0.3s ease-out;
             border: 2px solid #ef4444;
         }
-
     </style>
 </head>
 <body>
@@ -1063,7 +1062,7 @@
                     // Headers para Promoções
                     case 'ID Promocao': return 'id';
                     case 'Nome da Promocao': return 'name';
-                    case 'Descricao': return 'description'; // CORREÇÃO: Adicionado o mapeamento para a descrição das promoções
+                    case 'Descricao': return 'description';
                     case 'Preco Promocional': return 'promoPrice';
                     case 'ID Item Aplicavel': return 'itemId';
                     case 'Ativo (SIM/NAO)': return 'active';
@@ -2545,6 +2544,15 @@
                 showMessageModal('Não foi possível carregar o cardápio no momento. Por favor, tente novamente mais tarde.');
             }
         }
+        
+        // Listener para o evento pageshow para recarregar os dados do cardápio quando a página é restaurada do bfcache
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted) {
+                console.log('DEBUG: Página restaurada do bfcache. Recarregando dados do cardápio.');
+                loadMenuAndRender();
+            }
+        });
+
 
         // Evento que garante que a UI será carregada após o DOM estar pronto
         document.addEventListener('DOMContentLoaded', async function() {
@@ -2556,19 +2564,14 @@
                     })
                     .catch(error => {
                         console.log('DEBUG: Falha no registo do Service Worker:', error);
+                        if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+                            console.warn('DEBUG: Erro de rede/CORS no Service Worker. Isso pode ser esperado para recursos de terceiros não-cacheáveis.');
+                        }
                     });
             }
             
             // Chamada inicial para carregar todos os dados
             await loadMenuAndRender();
-        });
-        
-        // Listener para o problema do bfcache: recarrega a página para garantir dados atualizados.
-        document.addEventListener("visibilitychange", () => {
-            if (document.visibilityState === "visible") {
-                console.log("DEBUG: Página retornou ao foco. Recarregando dados do cardápio.");
-                loadMenuAndRender();
-            }
         });
         
         // --- Lógica de Instalação do PWA ---
