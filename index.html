@@ -471,20 +471,7 @@
             animation: fadeIn 0.3s ease-out;
             border: 2px solid #ef4444;
         }
-        /* NOVO: Estilo para o placeholder quando não há imagem */
-        .no-image-placeholder {
-            background-color: #dc2626; /* red-600 */
-            height: 160px; /* Mesma altura das imagens para manter o layout consistente */
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            text-align: center;
-            padding: 10px;
-            object-fit: cover;
-        }
+
     </style>
 </head>
 <body>
@@ -928,7 +915,6 @@
 
             if (orderSidebar.classList.contains('translate-x-0')) {
                 promotionButton.style.display = 'none';
-                orderSidebar.scrollTop = orderSidebar.scrollHeight; // Rola para o final ao abrir
             } else {
                 updatePromotionButtonVisibility();
             }
