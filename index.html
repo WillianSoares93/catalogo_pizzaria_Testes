@@ -471,7 +471,20 @@
             animation: fadeIn 0.3s ease-out;
             border: 2px solid #ef4444;
         }
-
+        /* NOVO: Estilo para o placeholder quando não há imagem */
+        .no-image-placeholder {
+            background-color: #dc2626; /* red-600 */
+            height: 160px; /* Mesma altura das imagens para manter o layout consistente */
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+            padding: 10px;
+            object-fit: cover;
+        }
     </style>
 </head>
 <body>
@@ -505,7 +518,7 @@
         <div class="category-bar-mobile-sticky lg:static lg:p-0">
             <!-- Os botões de categoria serão gerados dinamicamente aqui pelo JS -->
             <div id="category-buttons-container" class="flex space-x-2 mb-6 overflow-x-auto pb-2 
-                         lg:flex-row lg:space-x-2 lg:mb-6 lg:overflow-visible lg:pb-0">
+                        lg:flex-row lg:space-x-2 lg:mb-6 lg:overflow-visible lg:pb-0">
             </div>
         </div>
         
@@ -1064,6 +1077,7 @@
                     // Headers para Promoções
                     case 'ID Promocao': return 'id';
                     case 'Nome da Promocao': return 'name';
+                    case 'Descricao': return 'description';
                     case 'Preco Promocional': return 'promoPrice';
                     case 'ID Item Aplicavel': return 'itemId';
                     case 'Ativo (SIM/NAO)': return 'active';
@@ -1957,7 +1971,7 @@
 
         function updatePromotionButtonVisibility() {
             const activePromotionsWithPrice = allPromotionsData.filter(promo => promo.active && promo.promoPrice !== null);
-            if (activePromotionsWithPrice.length > 0 && !orderSidebar.classList.contains('translate-x-0') && pizzaOptionModal.style.display !== 'flex' && addressInputModal.style.display !== 'flex' && promotionPopup.style.display !== 'flex' && drinkSuggestionModal.style.display !== 'flex' && confirmNoDrinkModal.style.display !== 'flex' && installPromptModal.style.display !== 'flex' && paymentMethodModal.style.display !== 'flex') {
+            if (activePromotionsWithPrice.length > 0 && !orderSidebar.classList.contains('translate-x-0')) {
                 promotionButton.style.display = 'flex';
             } else {
                 promotionButton.style.display = 'none';
@@ -2504,7 +2518,20 @@
                 const deliveryFeesCsvText = data.deliveryFees; 
 
                 allMenuData = parseCsvData(cardapioCsvText, 'cardapio');
-                allPromotionsData = parseCsvData(promocoesCsvText, 'promocoes');
+                // Alteração: Mapear 'Descricao' para 'description'
+                const promotionsRaw = parseCsvData(promocoesCsvText, 'promocoes');
+                allPromotionsData = promotionsRaw.map(promo => {
+                    const newPromo = {...promo};
+                    // Verifica se a propriedade 'Descricao' existe e a mapeia para 'description'
+                    if (newPromo.hasOwnProperty('Descricao')) {
+                        newPromo.description = newPromo.Descricao;
+                        delete newPromo.Descricao;
+                    } else if (!newPromo.description) {
+                         newPromo.description = '';
+                    }
+                    return newPromo;
+                });
+                
                 deliveryFeesData = parseCsvData(deliveryFeesCsvText, 'deliveryFees'); 
                 console.log('DEBUG: DOMContentLoaded: Dados CSV parseados. allMenuData:', allMenuData.length, 'allPromotionsData:', allPromotionsData.length, 'deliveryFeesData:', deliveryFeesData.length); // Log de contagem de itens
                 
