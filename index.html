@@ -1215,10 +1215,10 @@
                                         <img src="${imageUrl}" alt="Pizza de ${item.name}" class="w-full h-40 object-cover" onerror="this.onerror=null;this.src='${defaultPizzaImage}';">
                                         <div class="p-6">
                                             <h3 class="text-xl font-bold text-gray-800 mb-2">${item.name}</h3>
+                                            <p class="text-gray-600 text-sm mb-4">${item.description}</p>
                                             <div class="flex justify-around items-start text-sm mb-4 w-full overflow-x-auto py-1">
                                                 ${priceDisplayHtml}
                                             </div>
-                                            <p class="text-gray-600 text-sm mb-4">${item.description}</p>
                                             <div class="flex justify-end mt-auto">
                                                 <button class="add-item-btn bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-full text-sm font-medium transition duration-300"
                                                         data-item-id="${item.id}" data-image-url="${imageUrl}">
@@ -1377,7 +1377,7 @@
                             button.classList.add('opacity-50', 'cursor-not-allowed');
                         }
                     } else { 
-                        if (category === 'promocionais') {
+                        if (item.category.toLowerCase() === 'promocionais') {
                             button.setAttribute('disabled', 'true');
                             button.classList.add('opacity-50', 'cursor-not-allowed');
                         } else {
@@ -1430,7 +1430,7 @@
                 const combinedName = `Meia ${cleanFirstName} & Meia ${item.name}`;
                 
                 const priceFirstHalfFullSize = firstHalfPizza.original_full_price; 
-                const priceSecondHalfFullSize = item[firstHalfPizza.priceKeyForSlices]; 
+                const priceSecondHalfFullSize = item[firstHalfHalfPizza.priceKeyForSlices]; 
 
                 const combinedPrice = ((priceFirstHalfFullSize || 0) / 2) + ((priceSecondHalfFullSize || 0) / 2);
                 const combinedDescription = `${firstHalfPizza.description.replace('Primeira metade: ', '')} e ${item.description}`;
@@ -2518,20 +2518,7 @@
                 const deliveryFeesCsvText = data.deliveryFees; 
 
                 allMenuData = parseCsvData(cardapioCsvText, 'cardapio');
-                // Alteração: Mapear 'Descricao' para 'description'
-                const promotionsRaw = parseCsvData(promocoesCsvText, 'promocoes');
-                allPromotionsData = promotionsRaw.map(promo => {
-                    const newPromo = {...promo};
-                    // Verifica se a propriedade 'Descricao' existe e a mapeia para 'description'
-                    if (newPromo.hasOwnProperty('Descricao')) {
-                        newPromo.description = newPromo.Descricao;
-                        delete newPromo.Descricao;
-                    } else if (!newPromo.description) {
-                         newPromo.description = '';
-                    }
-                    return newPromo;
-                });
-                
+                allPromotionsData = parseCsvData(promocoesCsvText, 'promocoes');
                 deliveryFeesData = parseCsvData(deliveryFeesCsvText, 'deliveryFees'); 
                 console.log('DEBUG: DOMContentLoaded: Dados CSV parseados. allMenuData:', allMenuData.length, 'allPromotionsData:', allPromotionsData.length, 'deliveryFeesData:', deliveryFeesData.length); // Log de contagem de itens
                 
@@ -2571,6 +2558,13 @@
                 showMessageModal('Não foi possível carregar o cardápio no momento. Por favor, tente novamente mais tarde.');
             }
         });
+        
+        document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === "visible") {
+                console.log("DEBUG: Página retornou ao foco. Recarregando a página para garantir dados atualizados.");
+                location.reload();
+            }
+        });
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -2580,8 +2574,6 @@
                     })
                     .catch(error => {
                         console.log('DEBUG: Falha no registo do Service Worker:', error);
-                        // Adicionado catch para o fetch dentro do service worker para evitar Uncaught (in promise)
-                        // Isso é uma correção para o erro de CORS reportado no service worker
                         if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
                             console.warn('DEBUG: Erro de rede/CORS no Service Worker. Isso pode ser esperado para recursos de terceiros não-cacheáveis.');
                         }
