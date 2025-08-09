@@ -1906,7 +1906,7 @@
 
                     promoDiv.innerHTML = `
                         <h4>${promo.name}</h4>
-                        <p>${promo.description || ''}</p> <!-- Adicionado || '' para garantir que não seja 'undefined' -->
+                        <p>${promo.description}</p>
                         <span class="price">R$ ${promo.promoPrice.toFixed(2).replace('.', ',')}</span>
                         <button class="add-promo-to-order-btn px-3 py-1 bg-green-600 text-white rounded-full text-sm hover:bg-green-700 transition mt-2"
                                 data-promo-id="${promo.id}" data-image-url="${promoImageUrl || ''}">
@@ -1938,7 +1938,7 @@
                     type: 'promotion',
                     name: promotion.name,
                     price: promotion.promoPrice,
-                    description: promotion.description || '', // Garante que a descrição seja string
+                    description: promotion.description,
                     itemId: promotion.itemId
                 });
                 updateOrderDisplay();
@@ -1957,7 +1957,7 @@
 
         function updatePromotionButtonVisibility() {
             const activePromotionsWithPrice = allPromotionsData.filter(promo => promo.active && promo.promoPrice !== null);
-            if (activePromotionsWithPrice.length > 0 && !orderSidebar.classList.contains('translate-x-0')) {
+            if (activePromotionsWithPrice.length > 0 && !orderSidebar.classList.contains('translate-x-0') && pizzaOptionModal.style.display !== 'flex' && addressInputModal.style.display !== 'flex' && promotionPopup.style.display !== 'flex' && drinkSuggestionModal.style.display !== 'flex' && confirmNoDrinkModal.style.display !== 'flex' && installPromptModal.style.display !== 'flex' && paymentMethodModal.style.display !== 'flex') {
                 promotionButton.style.display = 'flex';
             } else {
                 promotionButton.style.display = 'none';
